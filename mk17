@@ -1,0 +1,668 @@
+Appendix 3
+
+*************Makueni code************
+
+libname R 'C:\Users\Rnw95451\Dropbox\Ruth Data May 30 2019\Permenant dataset';
+
+data R.all2_6to9yrs;
+set R.all2;
+if 6<=agec<=9;
+run;
+
+data all2_6to9yrs_AFB_Makueni;
+set R.all2_6to9yrs;
+if AFB1_lysine GT 10 and county='makueni';
+run;
+
+
+ods pdf file="C:\Users\Rnw95451\Dropbox\Ruth Data May 30 2019\Output from SAS\Subset6_9yrs+AFB_Makueni.pdf" style=statistical startpage=never;
+
+*Calculate geomeans and median, and parameter estimates;
+%macro pvalue (var= );
+proc sort data=All2_6to9yrs_AFB_Makueni;by &var;run;
+proc surveymeans data=All2_6to9yrs_AFB_Makueni geomean CV median UGMCLM LGMCLM;
+by &var;
+var AFB1_lysine ;
+ods select Quantiles GeometricMeans;
+Title "Mean-Median of AFB1_lysine for &var level";
+footnote "subset of 6 to 9 years old + AFB analysis";
+run;
+%mend;
+%pvalue (var=baz1);
+%pvalue (var=waz1);
+%pvalue (var=haz1);
+%pvalue (var=weightc1);
+%pvalue (var=heightc2);
+%pvalue (var=muac1);
+%pvalue (var=bmic1);
+%pvalue (var=school2);
+%pvalue (var=sex1 );
+%pvalue (var=agec1);
+%pvalue (var=age_m1)
+%pvalue (var=wean_start1 );
+%pvalue (var=marital);
+%pvalue (var=education2);
+%pvalue (var=L_c);
+%pvalue (var=house_description);
+%pvalue (var=RT1);
+%pvalue (var=income1);
+%pvalue (var=occup1);
+%pvalue (var=S_occup1);
+%pvalue (var=smoke_alc1);
+%pvalue (var=grow_maize);
+%pvalue (var=pesticide_fertilizer1);
+%pvalue (var=maize_storage2);
+%pvalue (var=afs_knowledge);
+%pvalue (var=identify_afs_in_maize);
+%pvalue (var=afgrain1);
+%pvalue (var=flour_c1);
+%pvalue (var=source1);
+%pvalue (var=fq1foodsource);
+%pvalue (var=fq2_cost);
+%pvalue (var=fq5bedhungry);
+%pvalue (var=fq12aeat);
+%pvalue (var=fq13weat1);
+%pvalue (var=noc1);
+%pvalue (var=nop1);
+%pvalue (var=fq3nom1);
+
+
+%macro pvalue (var= );
+proc npar1way data=All2_6to9yrs_AFB_Makueni;
+class &var;
+var AFB1_lysine;
+ods select KruskalWallisTest ClassMeans;
+title1 "&var";
+title2 "Test whether AFB1_lysine is different between &var level";
+footnote "subset of 6 to 9 years old + AFB analysis";
+run;
+%mend;
+%pvalue (var=baz1);
+%pvalue (var=waz1);
+%pvalue (var=haz1);
+%pvalue (var=weightc1);
+%pvalue (var=heightc2);
+%pvalue (var=muac1);
+%pvalue (var=bmic1);
+%pvalue (var=school2);
+%pvalue (var=sex1);
+%pvalue (var=agec1);
+%pvalue (var=age_m1);
+%pvalue (var=wean_start1 );
+%pvalue (var=marital);
+%pvalue (var=education2);
+%pvalue (var=L_c);
+%pvalue (var=house_description);
+%pvalue (var=RT1);
+%pvalue (var=income1);
+%pvalue (var=occup1);
+%pvalue (var=S_occup1);
+%pvalue (var=smoke_alc1);
+%pvalue (var=grow_maize);
+%pvalue (var=pesticide_fertilizer1);
+%pvalue (var=maize_storage2);
+%pvalue (var=afs_knowledge);
+%pvalue (var=identify_afs_in_maize);
+%pvalue (var=afgrain1);
+%pvalue (var=flour_c1);
+%pvalue (var=source1);
+%pvalue (var=fq1foodsource);
+%pvalue (var=fq2_cost);
+%pvalue (var=fq5bedhungry);
+%pvalue (var=fq12aeat);
+%pvalue (var=fq13weat1);
+%pvalue (var=noc1);
+%pvalue (var=nop1);
+%pvalue (var=fq3nom1);
+
+*For continous factors;
+%macro pvalue (var= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model AFB1_lysine=&var;
+title "Test whether AFB1_lysine is associated with &var";
+ods select OverallANOVA ParameterEstimates;
+run;
+%mend;
+%pvalue (var=agec);
+%pvalue (var=weightc);
+%pvalue (var=heightc);
+%pvalue (var=muac);
+%pvalue (var=bmic);
+%pvalue (var=age_m);
+%pvalue (var=noc);
+%pvalue (var=nop);
+%pvalue (var=fq3nom);
+
+
+*************HAZ*************************************;
+*univariate analysis for covariate is continous;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model &out=&var/ss3 solution clparm;
+title "UNIVARIATE ANALYSIS &out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+%uni (var=  afgrain, out=haz);
+%uni (var=agem_first_child, out=HAZ);*<=0.10;
+%uni (var=agec, out=haz);
+%uni (var= ln_AFB, out=haz);
+%uni (var= age_m, out=haz);
+%uni (var= nop, out=haz);
+%uni (var= noc, out=haz);
+%uni (var= fq3nom, out=haz);
+
+*univariate analysis for covariate is category;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class &var;
+model &out=&var/ss3 solution clparm;
+title "&out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+*HAZ;
+%uni (var=school2, out=haz);
+%uni (var=sex, out=haz);
+%uni (var= marital, out=haz);
+%uni (var= education2, out=haz);
+%uni (var= wean_start1, out=haz);
+%uni (var= l_c, out=haz);
+%uni (var= house_description, out=haz);
+%uni (var= rt1, out=haz);
+%uni (var= income1, out=haz);*<=0.10;
+%uni (var= occup1, out=haz);
+%uni (var= s_occup1, out=haz);
+%uni (var=  smoke_alc1, out=haz);
+%uni (var=  grow_maize, out=haz);*<=0.10;
+%uni (var=  pesticide_fertilizer1, out=haz);
+%uni (var=  maize_storage2, out=haz);
+%uni (var=  afs_knowledge, out=haz);
+%uni (var=  identify_afs_in_maize, out=haz);
+%uni (var=  flour_c1, out=haz);
+%uni (var=  source1, out=haz);
+%uni (var=  fq1foodsource, out=haz);
+%uni (var=  fq2_cost, out=haz);
+%uni (var=  fq5bedhungry, out=haz);
+%uni (var=  fq12aeat, out=haz);
+%uni (var=  fq13weat1, out=haz);
+
+*Final model for HAZ;
+*******HAZ----MULTIVARIATE LINEAR REGRESSION FOR HAZ;
+proc glmselect data=All2_6to9yrs_AFB_Makueni;
+class income1 grow_maize;
+model HAZ= agem_first_child income1 grow_maize 
+/selection=backward(select=AICC);
+title "MULTIVARIATE LINEAR REGRESSION FOR HAZ - SELECTION PROCESS";
+run;
+
+*selection=forward (select=SL stop=PRESS);
+*selection=backward(select=AICC);*GOOD;
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class income1;
+model HAZ= agem_first_child income1 /CLParm ss3 solution;
+Title 'MULTIVARIATE -- HAZ -- WITHOUT LN_AFB';
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class income1;
+model HAZ=ln_AFB agem_first_child income1/CLParm ss3 solution;
+Title 'MULTIVARIATE -- HAZ -- WITH LN_AFB';
+run;
+
+*****************BAZ********************************;
+*********BAZ - UNIVARIATE ANALYSIS;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model &out=&var/ss3 solution clparm;
+title "UNIVARIATE ANALYSIS &out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+%uni (var=  afgrain, out=baz);
+%uni (var=agem_first_child, out=BAZ);*<=0.10;
+%uni (var=agec, out=baz);
+%uni (var= ln_AFB, out=baz);
+%uni (var= age_m, out=baz);
+%uni (var= nop, out=baz);
+%uni (var= noc, out=baz);
+%uni (var= fq3nom, out=baz);
+
+*univariate analysis for covariate is category;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class &var;
+model &out=&var/ss3 solution clparm;
+title "&out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+*BAZ;
+%uni (var=school2, out=baz);
+%uni (var=sex, out=baz);
+%uni (var= marital, out=baz);
+%uni (var= education2, out=baz);
+%uni (var= wean_start1, out=baz);
+%uni (var= l_c, out=baz);*<=0.10;
+%uni (var= house_description, out=baz);
+%uni (var= rt1, out=baz);*<=0.10;
+%uni (var= income1, out=baz);
+%uni (var= occup1, out=baz);
+%uni (var= s_occup1, out=baz);
+%uni (var=  smoke_alc1, out=baz);*<=0.10;
+%uni (var=  grow_maize, out=baz);*<=0.10;
+%uni (var=  pesticide_fertilizer1, out=baz);*<=0.10;
+%uni (var=  maize_storage2, out=baz);
+%uni (var=  afs_knowledge, out=baz);*<=0.10;
+%uni (var=  identify_afs_in_maize, out=baz);
+%uni (var=  flour_c1, out=baz);
+%uni (var=  source1, out=baz);
+%uni (var=  fq1foodsource, out=baz);
+%uni (var=  fq2_cost, out=baz);
+%uni (var=  fq5bedhungry, out=baz);
+%uni (var=  fq12aeat, out=baz);
+%uni (var=  fq13weat1, out=baz);
+
+*Final model for BAZ;
+*******BAZ----MULTIVARIATE LINEAR REGRESSION FOR BAZ;
+proc glmselect data=All2_6to9yrs_AFB_Makueni;
+class l_c rt1 smoke_alc1 grow_maize pesticide_fertilizer1 afs_knowledge;
+model BAZ=  agem_first_child 
+l_c rt1 smoke_alc1 grow_maize pesticide_fertilizer1 afs_knowledge
+/selection=backward(select=AICC);
+title "MULTIVARIATE LINEAR REGRESSION FOR BAZ - SELECTION PROCESS";
+run;
+
+*selection=forward (select=SL stop=PRESS);
+*selection=backward(select=AICC);*GOOD;
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class grow_maize afs_knowledge;
+model BAZ= agem_first_child grow_maize afs_knowledge/CLParm ss3 solution;
+Title 'MULTIVARIATE -- BAZ -- WITHOUT LN_AFB';
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class grow_maize afs_knowledge;
+model BAZ= ln_AFB agem_first_child grow_maize afs_knowledge/CLParm ss3 solution;
+Title 'MULTIVARIATE -- BAZ -- WITH LN_AFB';
+run;
+
+*****************WAZ********************************;
+*********WAZ - UNIVARIATE ANALYSIS;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model &out=&var/ss3 solution clparm;
+title "UNIVARIATE ANALYSIS &out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+%uni (var=  afgrain, out=waz);*<=0.10;
+%uni (var=agem_first_child, out=WAZ);
+%uni (var=agec, out=waz);*<=0.10;
+%uni (var= ln_AFB, out=waz);
+%uni (var= age_m, out=waz);
+%uni (var= nop, out=waz);
+%uni (var= noc, out=waz);
+%uni (var= fq3nom, out=waz);
+
+*univariate analysis for covariate is category;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class &var;
+model &out=&var/ss3 solution clparm;
+title "&out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+*WAZ;
+%uni (var=school2, out=waz);
+%uni (var=sex, out=waz);
+%uni (var= marital, out=waz);
+%uni (var= education2, out=waz);
+%uni (var= wean_start1, out=waz);
+%uni (var= l_c, out=waz);*<=0.10;
+%uni (var= house_description, out=waz);
+%uni (var= rt1, out=waz);*<=0.10;
+%uni (var= income1, out=waz);
+%uni (var= occup1, out=waz);
+%uni (var= s_occup1, out=waz);
+%uni (var=  smoke_alc1, out=waz);
+%uni (var=  grow_maize, out=waz);*<=0.10;
+%uni (var=  pesticide_fertilizer1, out=waz);*<=0.10;
+%uni (var=  maize_storage2, out=waz);
+%uni (var=  afs_knowledge, out=waz);
+%uni (var=  identify_afs_in_maize, out=waz);
+%uni (var=  flour_c1, out=waz);*<=0.10;
+%uni (var=  source1, out=waz);
+%uni (var=  fq1foodsource, out=waz);
+%uni (var=  fq2_cost, out=waz);
+%uni (var=  fq5bedhungry, out=waz);
+%uni (var=  fq12aeat, out=waz);
+%uni (var=  fq13weat1, out=waz);
+
+*Final model for WAZ;
+*******WAZ----MULTIVARIATE LINEAR REGRESSION FOR WAZ;
+proc glmselect data=All2_6to9yrs_AFB_Makueni;
+class l_c rt1  grow_maize pesticide_fertilizer1  flour_c1;
+model WAZ= afgrain agec 
+l_c rt1  grow_maize pesticide_fertilizer1  flour_c1 /selection=backward(select=AICC);
+title "MULTIVARIATE LINEAR REGRESSION FOR WAZ - SELECTION PROCESS";
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class l_c rt1;
+model WAZ= agec l_c rt1/CLParm ss3 solution;
+Title 'MULTIVARIATE -- WAZ -- WITHOUT LN_AFB';
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class l_c rt1;
+model WAZ=ln_AFB agec l_c rt1/CLParm ss3 solution;
+Title 'MULTIVARIATE -- WAZ -- WITH LN_AFB';
+run;
+
+*****************WHZ********************************;
+*********WHZ - UNIVARIATE ANALYSIS;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model &out=&var/ss3 solution clparm;
+title "UNIVARIATE ANALYSIS &out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+%uni (var=  afgrain, out=whz);
+%uni (var=agem_first_child, out=WHZ);
+%uni (var=agec, out=whz);
+%uni (var= ln_AFB, out=whz);
+%uni (var= age_m, out=whz);
+%uni (var= nop, out=whz);
+%uni (var= noc, out=whz);
+%uni (var= fq3nom, out=whz);
+
+*univariate analysis for covariate is category;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class &var;
+model &out=&var/ss3 solution clparm;
+title "&out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+*WHZ;
+%uni (var=school2, out=whz);*<=0.10;
+%uni (var=sex, out=whz);
+%uni (var= marital, out=whz);
+%uni (var= education2, out=whz);
+%uni (var= wean_start1, out=whz);
+%uni (var= l_c, out=whz);*<=0.10;
+%uni (var= house_description, out=whz);
+%uni (var= rt1, out=whz);*<=0.10;
+%uni (var= income1, out=whz);*<=0.10;
+%uni (var= occup1, out=whz);
+%uni (var= s_occup1, out=whz);
+%uni (var=  smoke_alc1, out=whz);
+%uni (var=  grow_maize, out=whz);*<=0.10;
+%uni (var=  pesticide_fertilizer1, out=whz);*<=0.10;
+%uni (var=  maize_storage2, out=whz);
+%uni (var=  afs_knowledge, out=whz);
+%uni (var=  identify_afs_in_maize, out=whz);
+%uni (var=  flour_c1, out=whz);*<=0.10;
+%uni (var=  source1, out=whz);*<=0.10;
+%uni (var=  fq1foodsource, out=whz);
+%uni (var=  fq2_cost, out=whz);
+%uni (var=  fq5bedhungry, out=whz);
+%uni (var=  fq12aeat, out=whz);
+%uni (var=  fq13weat1, out=whz);
+
+*Final model for WHZ;
+*******WHZ----MULTIVARIATE LINEAR REGRESSION FOR WHZ;
+proc glmselect data=All2_6to9yrs_AFB_Makueni;
+class school2 l_c rt1 income1 grow_maize pesticide_fertilizer1 flour_c1 source1 ;
+model WHZ=  school2 l_c rt1 income1 grow_maize pesticide_fertilizer1 flour_c1 source1  
+/selection=backward(select=AICC);
+title "MULTIVARIATE LINEAR REGRESSION FOR WHZ - SELECTION PROCESS";
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class  rt1 income1 pesticide_fertilizer1 flour_c1 source1;
+model WHZ=  rt1 income1 pesticide_fertilizer1 flour_c1 source1/CLParm ss3 solution;
+Title 'MULTIVARIATE -- WHZ -- WITHOUT LN_AFB';
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class  rt1 income1 pesticide_fertilizer1 flour_c1 source1;
+model WHZ=ln_AFB rt1 income1 pesticide_fertilizer1 flour_c1 source1/CLParm ss3 solution;
+Title 'MULTIVARIATE -- WHZ -- WITH LN_AFB';
+run;
+
+
+*****************MUAC********************************;
+*********MUAC - UNIVARIATE ANALYSIS;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model &out=&var/ss3 solution clparm;
+title "UNIVARIATE ANALYSIS &out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+%uni (var=  afgrain, out=muac);
+%uni (var=agem_first_child, out=MUAC);
+%uni (var=agec, out=muac);*<=0.10;
+%uni (var= ln_AFB, out=muac);
+%uni (var= age_m, out=muac);
+%uni (var= nop, out=muac);
+%uni (var= noc, out=muac);
+%uni (var= fq3nom, out=muac);
+
+*univariate analysis for covariate is category;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class &var;
+model &out=&var/ss3 solution clparm;
+title "&out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+*MUAC;
+%uni (var=school2, out=muac);
+%uni (var=sex, out=muac);
+%uni (var= marital, out=muac);
+%uni (var= education2, out=muac);
+%uni (var= wean_start1, out=muac);
+%uni (var= l_c, out=muac);
+%uni (var= house_description, out=muac);*<=0.10;
+%uni (var= rt1, out=muac);*<=0.10;
+%uni (var= income1, out=muac);*<=0.10;
+%uni (var= occup1, out=muac);
+%uni (var= s_occup1, out=muac);
+%uni (var=  smoke_alc1, out=muac);*<=0.10;
+%uni (var=  grow_maize, out=muac);*<=0.10;
+%uni (var=  pesticide_fertilizer1, out=muac);*<=0.10;
+%uni (var=  maize_storage2, out=muac);
+%uni (var=  afs_knowledge, out=muac);
+%uni (var=  identify_afs_in_maize, out=muac);
+%uni (var=  flour_c1, out=muac);*<=0.10;
+%uni (var=  source1, out=muac);
+%uni (var=  fq1foodsource, out=muac);
+%uni (var=  fq2_cost, out=muac);
+%uni (var=  fq5bedhungry, out=muac);
+%uni (var=  fq12aeat, out=muac);
+%uni (var=  fq13weat1, out=muac);
+
+*Final model for MUAC;
+*******MUAC----MULTIVARIATE LINEAR REGRESSION FOR MUAC;
+proc glmselect data=All2_6to9yrs_AFB_Makueni;
+class house_description rt1 income1 smoke_alc1 grow_maize pesticide_fertilizer1 
+flour_c1;
+model MUAC= agec house_description rt1 income1 smoke_alc1 grow_maize 
+pesticide_fertilizer1 flour_c1 /selection=backward(select=AICC);
+title "MULTIVARIATE LINEAR REGRESSION FOR MUAC - SELECTION PROCESS";
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class rt1 income1 smoke_alc1 pesticide_fertilizer1 flour_c1;
+model MUAC= agec  rt1 income1 smoke_alc1 pesticide_fertilizer1 flour_c1
+/CLParm ss3 solution;
+Title 'MULTIVARIATE -- MUAC -- WITHOUT LN_AFB';
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class rt1 income1 smoke_alc1 pesticide_fertilizer1 flour_c1;
+model MUAC= ln_AFB agec  rt1 income1 smoke_alc1 pesticide_fertilizer1 flour_c1
+/CLParm ss3 solution;
+Title 'MULTIVARIATE -- MUAC -- WITH LN_AFB';
+run;
+
+*****************WEIGHTC********************************;
+*********WEIGHTC - UNIVARIATE ANALYSIS;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model &out=&var/ss3 solution clparm;
+title "UNIVARIATE ANALYSIS &out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+%uni (var=  afgrain, out=weightc);
+%uni (var=agem_first_child, out=WEIGHTC);
+%uni (var=agec, out=weightc);*<=0.10;
+%uni (var= ln_AFB, out=weightc);
+%uni (var= age_m, out=weightc);
+%uni (var= nop, out=weightc);
+%uni (var= noc, out=weightc);
+%uni (var= fq3nom, out=weightc);
+
+*univariate analysis for covariate is category;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class &var;
+model &out=&var/ss3 solution clparm;
+title "&out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+*WEIGHTC;
+%uni (var=school2, out=weightc);*<=0.10;
+%uni (var=sex, out=weightc);
+%uni (var= marital, out=weightc);*<=0.10;
+%uni (var= education2, out=weightc);
+%uni (var= wean_start1, out=weightc);
+%uni (var= l_c, out=weightc);*<=0.10;
+%uni (var= house_description, out=weightc);
+%uni (var= rt1, out=weightc);*<=0.10;
+%uni (var= income1, out=weightc);
+%uni (var= occup1, out=weightc);
+%uni (var= s_occup1, out=weightc);
+%uni (var=  smoke_alc1, out=weightc);
+%uni (var=  grow_maize, out=weightc);*<=0.10;
+%uni (var=  pesticide_fertilizer1, out=weightc);*<=0.10;
+%uni (var=  maize_storage2, out=weightc);
+%uni (var=  afs_knowledge, out=weightc);
+%uni (var=  identify_afs_in_maize, out=weightc);
+%uni (var=  flour_c1, out=weightc);*<=0.10;
+%uni (var=  source1, out=weightc);
+%uni (var=  fq1foodsource, out=weightc);
+%uni (var=  fq2_cost, out=weightc);
+%uni (var=  fq5bedhungry, out=weightc);
+%uni (var=  fq12aeat, out=weightc);
+%uni (var=  fq13weat1, out=weightc);
+
+*Final model for WEIGHTC;
+*******WEIGHTC----MULTIVARIATE LINEAR REGRESSION FOR WEIGHTC;
+proc glmselect data=All2_6to9yrs_AFB_Makueni;
+class school2 marital l_c rt1  grow_maize pesticide_fertilizer1 flour_c1  ;
+model WEIGHTC= agec 
+school2 marital l_c rt1  grow_maize pesticide_fertilizer1 flour_c1  
+/selection=backward(select=AICC);
+title "MULTIVARIATE LINEAR REGRESSION FOR WEIGHTC - SELECTION PROCESS";
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class l_c rt1 ;
+model WEIGHTC= agec l_c rt1 /CLParm ss3 solution;
+Title 'MULTIVARIATE -- WEIGHTC -- WITHOUT LN_AFB';
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class l_c rt1 ;
+model WEIGHTC=ln_AFB agec l_c rt1 /CLParm ss3 solution;
+Title 'MULTIVARIATE -- WEIGHTC -- WITH LN_AFB';
+run;
+
+*****************HEIGHTC********************************;
+*********HEIGHTC - UNIVARIATE ANALYSIS;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+model &out=&var/ss3 solution clparm;
+title "UNIVARIATE ANALYSIS &out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+%uni (var=  afgrain, out=heightc);
+%uni (var=agem_first_child, out=HEIGHTC);
+%uni (var=agec, out=heightc);*<=0.10;
+%uni (var= ln_AFB, out=heightc);
+%uni (var= age_m, out=heightc);
+%uni (var= nop, out=heightc);
+%uni (var= noc, out=heightc);
+%uni (var= fq3nom, out=heightc);
+
+*univariate analysis for covariate is category;
+%macro uni (var= , out= );
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class &var;
+model &out=&var/ss3 solution clparm;
+title "&out ---&var";
+ods select ParameterEstimates OverallANOVA  NObs;
+run;
+%mend;
+*HEIGHTC;
+%uni (var=school2, out=heightc);
+%uni (var=sex, out=heightc);
+%uni (var= marital, out=heightc);
+%uni (var= education2, out=heightc);*<=0.10;
+%uni (var= wean_start1, out=heightc);*<=0.10;
+%uni (var= l_c, out=heightc);
+%uni (var= house_description, out=heightc);
+%uni (var= rt1, out=heightc);
+%uni (var= income1, out=heightc);*<=0.10;
+%uni (var= occup1, out=heightc);
+%uni (var= s_occup1, out=heightc);
+%uni (var=  smoke_alc1, out=heightc);
+%uni (var=  grow_maize, out=heightc);*<=0.10;
+%uni (var=  pesticide_fertilizer1, out=heightc);
+%uni (var=  maize_storage2, out=heightc);*<=0.10;
+%uni (var=  afs_knowledge, out=heightc);
+%uni (var=  identify_afs_in_maize, out=heightc);
+%uni (var=  flour_c1, out=heightc);
+%uni (var=  source1, out=heightc);
+%uni (var=  fq1foodsource, out=heightc);
+%uni (var=  fq2_cost, out=heightc);*<=0.10;
+%uni (var=  fq5bedhungry, out=heightc);
+%uni (var=  fq12aeat, out=heightc);
+%uni (var=  fq13weat1, out=heightc);
+
+*Final model for HEIGHTC;
+*******HEIGHTC----MULTIVARIATE LINEAR REGRESSION FOR HEIGHTC;
+proc glmselect data=All2_6to9yrs_AFB_Makueni;
+class education2 wean_start1 income1 grow_maize maize_storage2 fq2_cost;
+model HEIGHTC=  agec 
+education2 wean_start1 income1 grow_maize maize_storage2 fq2_cost
+/selection=backward(select=AICC);
+title "MULTIVARIATE LINEAR REGRESSION FOR HEIGHTC - SELECTION PROCESS";
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class income1;
+model HEIGHTC= agec income1 /CLParm ss3 solution;
+Title 'MULTIVARIATE -- HEIGHTC -- WITHOUT LN_AFB';
+run;
+
+proc glm data=All2_6to9yrs_AFB_Makueni;
+class income1;
+model HEIGHTC=ln_AFB agec income1 /CLParm ss3 solution;
+Title 'MULTIVARIATE -- HEIGHTC -- WITH LN_AFB';
+run;
+
+ods pdf close;
+
+
